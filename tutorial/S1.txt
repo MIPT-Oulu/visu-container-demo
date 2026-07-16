@@ -1,0 +1,1 @@
+SOLUTION TO Q1: Time variable describes the follow-up period and obviously has a high correlation to death (long follow-up time results in a likely death). It should not be used since it provides little diagnostic value.
