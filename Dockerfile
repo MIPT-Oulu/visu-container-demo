@@ -3,9 +3,11 @@
 # ---------------------------------------------------------------------------
 # BASE IMAGE
 # ---------------------------------------------------------------------------
-# The base image is a pre-built Jupyter environment with Python and common
+# The base image in this example is a pre-built Jupyter environment with Python and common
 # scientific libraries (numpy, scipy, matplotlib) already installed.
 # The date tag ensures the exact same version for each build of the image.
+# There are smaller base images that could for example have only a lightweight linux installation.
+# See https://hub.docker.com/u/library for Docker Official Images
 FROM quay.io/jupyter/scipy-notebook:2025-12-31
 
 # ---------------------------------------------------------------------------
@@ -42,9 +44,10 @@ USER ${NB_UID}
 # ---------------------------------------------------------------------------
 # PYTHON PACKAGES
 # ---------------------------------------------------------------------------
-# Copy the requirements file and install packages.
+# Copy the requirements file to image and install packages.
 # Copying requirements.txt before the rest of the code means Docker can
-# skip re-installing packages when only your code changes.
+# skip re-installing packages when only your code changes
+# and the image is rebuilt.
 COPY requirements.txt /code/requirements.txt
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
     pip install --no-cache-dir -r /code/requirements.txt
@@ -52,7 +55,7 @@ RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
 # ---------------------------------------------------------------------------
 # CODE
 # ---------------------------------------------------------------------------
-# Copy notebooks and scripts into the container.
+# Copy notebooks and scripts from the project folder (. = current directory) into the container (.).
 #
 # The image contains only code and libraries. Note that data is not copied to the container.
 # This is especially important in a case where sensitive data would be available.

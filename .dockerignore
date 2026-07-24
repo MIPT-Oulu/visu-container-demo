@@ -1,1 +1,2 @@
+# Do not include the local data directory inside build despite copying everything with the COPY . . -command.
 data/
