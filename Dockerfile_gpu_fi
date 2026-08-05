@@ -1,0 +1,51 @@
+# syntax=docker/dockerfile:1
+# Valitse Docker-pohja heti alkuun FROM-komennolla. Jotkin koodinladontaohjelmat voivat ehdottaa listaa pohjista.
+# Esim. PyCharmissa kun kirjoittaa "nvidia/cuda:13.", PyCharm listaa eri kuvaversioita.
+# Kuvia voi myös etsiä Dockerpohjakatalogista, linkki dokumentin pohjalla.
+FROM nvidia/cuda:13.1.0-base-rockylinux9
+
+# WORKDIR-komennolla asetetaan kontin sisäinen hakemisto, jossa WORKDIR jälkeiset komennot ajetaan.
+WORKDIR /code
+
+# Päivitetään kaikki pohjan mukana tulleet paketit, koska ne eivät välttämättä ole uusimmat mahdolliset pohjassa.
+# Huom. "dnf" pakettimanageri, koska pohjan käyttöjärjestelmä on Rocky Linux (Red Hat Linux Enterprise-yhteensopiva)
+RUN dnf check-update && \
+    dnf upgrade -y && \
+    dnf install -y dnf-plugins-core
+
+# Asennetaan RUN-komenolla tarvittavat Python paketit, sekä pari muuta tarpeellista pakettia
+RUN dnf install -y \
+        python3.11 \
+        python3.11-devel \
+        python3.11-pip \
+        nano \
+        ca-certificates \
+        libX11 \
+        libXext \
+        mesa-libGL \
+      && dnf clean all
+
+# Tallennetaan Python 3.11 virtuaaliympäristöön venv ja lisätään se polkumuuttujaan
+RUN python3.11 -m venv /venv
+ENV PATH=/venv/bin:$PATH
+
+# Python 3.11 pakettien päivitys
+RUN python3.11 -m pip install --no-cache-dir --upgrade pip setuptools wheel
+
+# Copy-komenolla kopioidaan tiedostoja konttiin. Kopioitavan tiedoston täytyy sijaita samassa hakemistossa, tai
+# on käytettävä kopioitavan tiedoston koko polkua. Komennon rakenne on: COPY <kohde_tiedosto> <haluttu/kansio/kontissa>
+# Esimerkiksi seuraava COPY-komento kopioi tiedoston "requirements.txt" kontin sisäiseen "code/requirements.txt" hakemistoon.
+COPY requirements.txt /code/requirements.txt
+
+# Koodiprojektin pyörittämiseen tarvittavat paperit yleensä listataan requirements.txt tekstidokumenttiin, jonka
+# avulla pakettimanagerit voivat asentaan projektin tarvittavat paketit yhdellä komennolla kuten seuraavalla RUN-komennolla:
+RUN python3.11 -m pip install --no-cache-dir -r /code/requirements.txt
+
+# Usein halutaa, että projektin sisäiset koodit sekä muut tiedostot kopioituvat konttiin.
+# Kun terminaalissa kutsutaan docker build-komentoa, terminaalin sen hetkisen hakemiston sisältö kopioituu konttiin seuraavalla COPY-komennolla:
+COPY . .
+
+# Docker-kontit on usein luotu suorittamaan vain yhtä tehtävää. CMD-komennolla voidaan määritellä komento, joka
+# suoritetaan kontin sisällä terminaalissa. Seuraavalla CMD-komennolla esimerkiksi ajettaisiin aiemmalla
+# COPY-komennolla konttiin projektista kopioitu Python kooditiedosto "main.py".
+CMD ["python", "main.py"]
