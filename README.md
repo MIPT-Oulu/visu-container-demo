@@ -1,4 +1,4 @@
-# VISU container computing tutorial — Predicting Heart Failure from Clinical Data
+# Container computing tutorial for the VISU sensitive data computing environment
 
 This demo shows how to train and interpret a machine learning classifier using clinical measurements from heart failure patients. The tutorial covers data splitting, model training with cross-validation, evaluation metrics, and feature importance analysis with SHAP.
 
